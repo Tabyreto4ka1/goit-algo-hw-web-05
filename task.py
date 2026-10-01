@@ -7,15 +7,20 @@ from datetime import datetime, timedelta
 date =datetime.now().strftime("%d.%m.%Y") 
 API =(f"https://api.privatbank.ua/p24api/exchange_rates?date={date}")
 
+async def processing(html):
+    
+                currency=[]
+                for i in html["exchangeRate"]:              #Знаходимо курси саме EUR i USD
+                    if i.get("currency") in ("EUR", "USD"):
+                        currency.append(i)
+                return currency
+
 async def main(API):
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(API) as response:
                 html = await response.json()
-
-                for i in html["exchangeRate"]:              #Знаходимо курси саме EUR i USD
-                    if i.get("currency") in ("EUR", "USD"):
-                        return i
+            return await processing(html)
 
         except aiohttp.ClientConnectorError as err:         #Якщо сайт не відповідає
             print("Connection error:", str(err))
